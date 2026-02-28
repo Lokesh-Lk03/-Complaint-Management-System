@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — ERP University Portal</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="theme-light">
+
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div class="dashboard-layout">
+        <!-- ── Sidebar ── -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon"><i class="fa-solid fa-university"></i></div>
+                <div class="sidebar-brand-text">
+                    <h2>UniERP</h2>
+                    <span>Admin Portal</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Main Menu</div>
+                <a href="admin-dashboard.html" class="active" id="nav-dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="user-management.html" id="nav-users">
+                    <i class="fa-solid fa-users-cog"></i> User Management
+                </a>
+                <a href="notifications.html" id="nav-notifs">
+                    <i class="fa-solid fa-bell"></i> Notifications
+                    <span class="nav-badge" id="sidebarNotifBadge">0</span>
+                </a>
+                <div class="sidebar-section-label" style="margin-top:10px;">Account</div>
+                <a href="settings.html" id="nav-settings">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" onclick="logoutUser()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- ── Main ── -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <div>
+                        <div class="header-page-title">Dashboard</div>
+                        <div class="header-breadcrumb">Admin <span class="sep">/</span> Dashboard</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <a href="notifications.html" class="notif-btn" title="Notifications">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="badge" id="headerNotifBadge">0</span>
+                    </a>
+                    <div class="profile-dropdown">
+                        <div class="profile-trigger" id="profileTrigger" onclick="toggleProfileMenu()">
+                            <div class="profile-avatar" id="adminAvatar">A</div>
+                            <div class="profile-info">
+                                <span class="name" id="adminName">Administrator</span>
+                                <span class="role">System Admin</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down chevron"></i>
+                        </div>
+                        <div class="profile-menu" id="profileMenu">
+                            <div class="profile-menu-header">
+                                <div class="full-name" id="menuFullName">Administrator</div>
+                                <div class="email">admin@university.edu</div>
+                            </div>
+                            <a href="settings.html"><i class="fa-solid fa-user-pen"></i> Edit Profile</a>
+                            <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+                            <hr>
+                            <a href="#" class="danger" onclick="logoutUser()"><i
+                                    class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="page-content">
+                <!-- Stat Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card" style="--card-accent:#3b82f6; --icon-bg:#eff6ff; --icon-color:#2563eb;">
+                        <div class="stat-icon"><i class="fa-solid fa-inbox"></i></div>
+                        <div class="stat-info">
+                            <div class="label">New Complaints</div>
+                            <div class="value" id="countNew">0</div>
+                            <div class="trend"><i class="fa-solid fa-circle-dot"></i> Pending review</div>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="--card-accent:#f59e0b; --icon-bg:#fef3c7; --icon-color:#d97706;">
+                        <div class="stat-icon"><i class="fa-solid fa-spinner"></i></div>
+                        <div class="stat-info">
+                            <div class="label">In Progress</div>
+                            <div class="value" id="countIP">0</div>
+                            <div class="trend"><i class="fa-solid fa-arrows-rotate"></i> Being handled</div>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="--card-accent:#10b981; --icon-bg:#d1fae5; --icon-color:#059669;">
+                        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-info">
+                            <div class="label">Resolved</div>
+                            <div class="value" id="countRes">0</div>
+                            <div class="trend"><i class="fa-solid fa-check"></i> Completed</div>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="--card-accent:#ef4444; --icon-bg:#fee2e2; --icon-color:#dc2626;">
+                        <div class="stat-icon"><i class="fa-solid fa-rotate-left"></i></div>
+                        <div class="stat-info">
+                            <div class="label">Reopened</div>
+                            <div class="value" id="countRe">0</div>
+                            <div class="trend"><i class="fa-solid fa-exclamation"></i> Needs attention</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Complaint Table -->
+                <div class="table-wrap">
+                    <div class="table-actions">
+                        <h3 style="color:var(--text-primary);">Complaint Management</h3>
+                        <div class="table-search">
+                            <div class="search-input-wrap">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="searchComplaints" placeholder="Search complaints…"
+                                    class="filter-select" style="width:200px;">
+                            </div>
+                            <select id="filterStatus" class="filter-select">
+                                <option value="all">All Status</option>
+                                <option value="New">New</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Resolved">Resolved</option>
+                                <option value="Reopened">Reopened</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table id="adminTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Student Name</th>
+                                    <th>Course</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Referral</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody">
+                                <!-- filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Modal -->
+    <div class="modal-overlay" id="updateModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-pen-to-square"></i> Update Complaint</h3>
+                <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateForm">
+                    <input type="hidden" id="modalId">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="modalStatus">
+                            <option value="New">New</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="Reopened">Reopened</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Refer to Department <span
+                                style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+                        <input type="text" id="modalReferral" placeholder="e.g. IT Dept, Finance, Dean">
+                    </div>
+                    <div class="form-group">
+                        <label>Admin Remarks</label>
+                        <textarea id="modalRemarks" rows="3" placeholder="Add remarks or comments…"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" type="button" onclick="submitUpdateForm()">
+                    <i class="fa-solid fa-check"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+</body>
+
+</html>

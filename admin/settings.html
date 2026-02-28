@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings — Admin ERP</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="theme-light">
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon"><i class="fa-solid fa-university"></i></div>
+                <div class="sidebar-brand-text">
+                    <h2>UniERP</h2><span>Admin Portal</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Main Menu</div>
+                <a href="admin-dashboard.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="user-management.html"><i class="fa-solid fa-users-cog"></i> User Management</a>
+                <a href="notifications.html"><i class="fa-solid fa-bell"></i> Notifications
+                    <span class="nav-badge" id="sidebarNotifBadge">0</span></a>
+                <div class="sidebar-section-label" style="margin-top:10px;">Account</div>
+                <a href="settings.html" class="active"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <div>
+                        <div class="header-page-title">Settings</div>
+                        <div class="header-breadcrumb">Admin <span class="sep">/</span> Settings</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <a href="notifications.html" class="notif-btn" title="Notifications">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="badge" id="headerNotifBadge">0</span>
+                    </a>
+                    <div class="profile-dropdown">
+                        <div class="profile-trigger" id="profileTrigger" onclick="toggleProfileMenu()">
+                            <div class="profile-avatar">A</div>
+                            <div class="profile-info">
+                                <span class="name">Administrator</span>
+                                <span class="role">System Admin</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down chevron"></i>
+                        </div>
+                        <div class="profile-menu" id="profileMenu">
+                            <div class="profile-menu-header">
+                                <div class="full-name">Administrator</div>
+                                <div class="email">admin@university.edu</div>
+                            </div>
+                            <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+                            <hr>
+                            <a href="#" class="danger" onclick="logoutUser()"><i
+                                    class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div id="settingsMsg" class="alert hidden" style="margin-bottom:20px;"></div>
+
+                <div class="settings-grid">
+                    <!-- Appearance -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-palette" style="color:var(--primary);"></i> Appearance</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="toggle-switch" style="padding:10px 0;">
+                                <div class="toggle-info">
+                                    <h4>Dark Mode</h4>
+                                    <p>Switch to dark theme across all pages</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode(this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <hr class="divider">
+                            <div class="toggle-switch" style="padding:10px 0;">
+                                <div class="toggle-info">
+                                    <h4>Compact Sidebar</h4>
+                                    <p>Collapse sidebar to icon-only mode</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="compactSidebar">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> Security</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="changePasswordForm" novalidate>
+                                <div class="form-group">
+                                    <label>Current Password</label>
+                                    <input type="password" id="currentPassword" placeholder="Enter current password"
+                                        required>
+                                </div>
+                                <div class="form-group">
+                                    <label>New Password</label>
+                                    <input type="password" id="newPassword" placeholder="At least 6 characters"
+                                        required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Confirm New Password</label>
+                                    <input type="password" id="confirmPassword" placeholder="Repeat new password"
+                                        required>
+                                </div>
+                                <div id="pwError" class="alert alert-error hidden" style="margin-bottom:14px;"></div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa-solid fa-key"></i> Update Password
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Profile Info -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-user" style="color:var(--primary);"></i> Profile</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+                                <div class="profile-avatar" style="width:60px;height:60px;font-size:1.4rem;">A</div>
+                                <div>
+                                    <div style="font-weight:600;color:var(--text-primary);">Administrator</div>
+                                    <div style="font-size:0.8rem;color:var(--text-muted);">admin@university.edu</div>
+                                    <span class="badge badge-admin" style="margin-top:6px;">System Admin</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Display Name</label>
+                                <input type="text" id="displayName" value="Administrator" placeholder="Display name">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="profileEmail" value="admin@university.edu" placeholder="Email">
+                            </div>
+                            <button class="btn btn-primary" onclick="saveProfile()">
+                                <i class="fa-solid fa-save"></i> Save Profile
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- System Info -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-circle-info" style="color:var(--primary);"></i> System Info</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display:flex;flex-direction:column;gap:12px;">
+                                <div
+                                    style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+                                    <span style="font-size:0.875rem;color:var(--text-secondary);">System Version</span>
+                                    <span style="font-size:0.875rem;font-weight:600;color:var(--text-primary);">UniERP
+                                        v2.0</span>
+                                </div>
+                                <div
+                                    style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+                                    <span style="font-size:0.875rem;color:var(--text-secondary);">Institution</span>
+                                    <span
+                                        style="font-size:0.875rem;font-weight:600;color:var(--text-primary);">University
+                                        Portal</span>
+                                </div>
+                                <div
+                                    style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+                                    <span style="font-size:0.875rem;color:var(--text-secondary);">Data Mode</span>
+                                    <span class="badge badge-active">Local Storage</span>
+                                </div>
+                                <div
+                                    style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+                                    <span style="font-size:0.875rem;color:var(--text-secondary);">Theme</span>
+                                    <span style="font-size:0.875rem;font-weight:600;color:var(--text-primary);"
+                                        id="currentThemeLabel">Light</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard — ERP University Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="theme-light">
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div class="dashboard-layout">
+        <!-- ── Sidebar ── -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="sidebar-brand-text">
+                    <h2>UniERP</h2>
+                    <span>Student Portal</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Main Menu</div>
+                <a href="student-dashboard.html" class="active">
+                    <i class="fa-solid fa-pen-to-square"></i> My Complaints
+                </a>
+                <a href="notifications.html">
+                    <i class="fa-solid fa-bell"></i> Notifications
+                    <span class="nav-badge" id="sidebarNotifBadge">0</span>
+                </a>
+                <div class="sidebar-section-label" style="margin-top:10px;">Account</div>
+                <a href="settings.html">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" onclick="logoutUser()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- ── Main ── -->
+        <div class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <div>
+                        <div class="header-page-title">My Complaints</div>
+                        <div class="header-breadcrumb">Student <span class="sep">/</span> Complaints</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <a href="notifications.html" class="notif-btn" title="Notifications">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="badge" id="headerNotifBadge">0</span>
+                    </a>
+                    <div class="profile-dropdown">
+                        <div class="profile-trigger" id="profileTrigger" onclick="toggleProfileMenu()">
+                            <div class="profile-avatar" id="studentAvatar">S</div>
+                            <div class="profile-info">
+                                <span class="name" id="studentName">Student</span>
+                                <span class="role">Student</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down chevron"></i>
+                        </div>
+                        <div class="profile-menu" id="profileMenu">
+                            <div class="profile-menu-header">
+                                <div class="full-name" id="menuStudentName">Student</div>
+                                <div class="email" id="menuStudentEmail">student@university.edu</div>
+                            </div>
+                            <a href="settings.html"><i class="fa-solid fa-user-pen"></i> Profile</a>
+                            <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+                            <hr>
+                            <a href="#" class="danger" onclick="logoutUser()"><i
+                                    class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Quick stats -->
+                <div class="stats-grid"
+                    style="grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); margin-bottom: 24px;">
+
+                    <div class="stat-card" style="--card-accent:#10b981; --icon-bg:#d1fae5; --icon-color:#059669;">
+                        <div class="stat-icon" style="width:42px;height:42px;font-size:1rem;"><i
+                                class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-info">
+                            <div class="label">Resolved</div>
+                            <div class="value" id="stRes" style="font-size:1.6rem;">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="--card-accent:#ef4444; --icon-bg:#fee2e2; --icon-color:#dc2626;">
+                        <div class="stat-icon" style="width:42px;height:42px;font-size:1rem;"><i
+                                class="fa-solid fa-rotate-left"></i></div>
+                        <div class="stat-info">
+                            <div class="label">Reopened</div>
+                            <div class="value" id="stRe" style="font-size:1.6rem;">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main two-column grid -->
+                <div class="two-col" style="gap:24px;">
+                    <!-- Submit Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-pen-to-square" style="color:var(--primary);"></i> Submit a
+                                Complaint</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="successMsg" class="alert alert-success hidden">
+                                <i class="fa-solid fa-check-circle"></i> Complaint submitted successfully!
+                            </div>
+                            <form id="complaintForm" novalidate>
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" id="cName" placeholder="Your full name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Email Address</label>
+                                    <input type="email" id="cEmail" placeholder="your@email.com" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Gender</label>
+                                    <div class="radio-group">
+                                        <label><input type="radio" name="cGender" value="Male" required> Male</label>
+                                        <label><input type="radio" name="cGender" value="Female"> Female</label>
+                                        <label><input type="radio" name="cGender" value="Others"> Others</label>
+                                    </div>
+                                </div>
+                                <!-- ── Dependent Dropdowns: Faculty → School → Course ── -->
+                                <div class="form-group">
+                                    <label for="cFaculty">
+                                        <i class="fa-solid fa-building-columns"
+                                            style="color:var(--primary);margin-right:5px;"></i>
+                                        Faculty
+                                    </label>
+                                    <select id="cFaculty" required onchange="onFacultyChange(this.value)">
+                                        <option value="" disabled selected>— Select Faculty —</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="cSchool">
+                                        <i class="fa-solid fa-school"
+                                            style="color:var(--primary);margin-right:5px;"></i>
+                                        School
+                                        <span id="schoolHint"
+                                            style="font-size:0.75rem;color:var(--text-muted);font-weight:400;"> (select
+                                            a faculty first)</span>
+                                    </label>
+                                    <select id="cSchool" required disabled onchange="onSchoolChange(this.value)">
+                                        <option value="" disabled selected>— Select School —</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="cCourse">
+                                        <i class="fa-solid fa-graduation-cap"
+                                            style="color:var(--primary);margin-right:5px;"></i>
+                                        Course / Programme
+                                        <span id="courseHint"
+                                            style="font-size:0.75rem;color:var(--text-muted);font-weight:400;"> (select
+                                            a school first)</span>
+                                    </label>
+                                    <select id="cCourse" required disabled>
+                                        <option value="" disabled selected>— Select Course —</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Complaint Description</label>
+                                    <textarea id="cDesc" rows="4" placeholder="Describe your complaint in detail…"
+                                        required></textarea>
+                                </div>
+                                <div style="display:flex;gap:10px;margin-top:4px;">
+                                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                                        <i class="fa-solid fa-paper-plane"></i> Submit
+                                    </button>
+                                    <button type="button" class="btn btn-secondary"
+                                        onclick="document.getElementById('complaintForm').reset()">
+                                        <i class="fa-solid fa-rotate-left"></i> Clear
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- My Complaints Table -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> My Complaints</h3>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Description</th>
+                                        <th>School</th>
+                                        <th>Course</th>
+                                        <th>Status</th>
+                                        <th>Referral</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentTableBody">
+                                    <!-- filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
