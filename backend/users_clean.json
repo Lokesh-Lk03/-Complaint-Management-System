@@ -1,0 +1,26 @@
+[
+  {
+    "id": "admin",
+    "name": "System Admin",
+    "email": "admin@university.edu",
+    "password": "$2a$10$eE0mEDD8d/y4jItJOS1i8e8s.zT8S2sZ/YFz8X5n/Z3h9Qc8o9q/S",
+    "role": "admin",
+    "course": null,
+    "contact": null,
+    "dept": null,
+    "status": "active",
+    "created_at": "2026-02-28T15:30:07.454557+00:00"
+  },
+  {
+    "id": "student",
+    "name": "Demo Student",
+    "email": "student@university.edu",
+    "password": "$2a$10$w0B/5I0f5/j.RLE8r8o4zuaJ4xO4.Ry2X2r7rGqG0K.4J4Qk4/h0O",
+    "role": "student",
+    "course": null,
+    "contact": null,
+    "dept": null,
+    "status": "active",
+    "created_at": "2026-02-28T16:25:33.895166+00:00"
+  }
+]

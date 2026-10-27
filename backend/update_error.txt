@@ -1,0 +1,6 @@
+{
+  "message": "new row for relation \"complaints\" violates check constraint \"complaints_status_check\"",
+  "code": "23514",
+  "details": null,
+  "hint": null
+}

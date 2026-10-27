@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+frontend-old/node_modules/
+
+# Build output
+frontend/dist/
+frontend-old/dist/
+
+# Environment files (keep .env.example if present)
+.env
+backend/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/

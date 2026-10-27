@@ -1,0 +1,12 @@
+{
+  "user": {
+    "id": "Calebk",
+    "role": "student",
+    "iat": 1772619012,
+    "exp": 1772705412
+  },
+  "message": "Could not find the 'course' column of 'complaints' in the schema cache",
+  "code": "PGRST204",
+  "details": null,
+  "hint": null
+}
