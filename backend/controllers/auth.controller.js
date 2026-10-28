@@ -129,23 +129,31 @@ exports.register = async (req, res) => {
 
         // 1. Supabase configured
         if (supabase) {
-            // Check existing ID
-            const { data: existingUser } = await supabase
+            // Check existing ID using maybeSingle() so 0 rows doesn't throw PGRST116
+            const { data: existingUser, error: idCheckError } = await supabase
                 .from('users')
                 .select('id')
                 .eq('id', trimmedId)
-                .single();
+                .maybeSingle();
 
-            if (existingUser) {
-                return res.status(400).json({ success: false, message: 'User ID already exists.' });
+            if (idCheckError && idCheckError.code !== 'PGRST116') {
+                console.warn('ID check warning:', idCheckError.message);
             }
 
-            // Check existing email
-            const { data: existingEmail } = await supabase
+            if (existingUser) {
+                return res.status(400).json({ success: false, message: 'User ID already exists. Please choose another ID or sign in.' });
+            }
+
+            // Check existing email using maybeSingle()
+            const { data: existingEmail, error: emailCheckError } = await supabase
                 .from('users')
                 .select('id')
                 .eq('email', trimmedEmail)
-                .single();
+                .maybeSingle();
+
+            if (emailCheckError && emailCheckError.code !== 'PGRST116') {
+                console.warn('Email check warning:', emailCheckError.message);
+            }
 
             if (existingEmail) {
                 return res.status(400).json({ success: false, message: 'Email address is already registered.' });
@@ -154,23 +162,40 @@ exports.register = async (req, res) => {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
 
+            // Base insert payload compatible with standard users schema
+            const userPayload = {
+                id: trimmedId,
+                name: name.trim(),
+                email: trimmedEmail,
+                password: hashedPassword,
+                role: 'student',
+                course: course || null,
+                dept: dept || null,
+                status: 'active'
+            };
+
             const { data: newUser, error } = await supabase
                 .from('users')
-                .insert([{
-                    id: trimmedId,
-                    name: name.trim(),
-                    email: trimmedEmail,
-                    password: hashedPassword,
-                    role: 'student',
-                    course: course || null,
-                    dept: dept || null,
-                    study_level: study_level || null,
-                    status: 'active'
-                }])
+                .insert([userPayload])
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase user insert error:', error);
+                throw error;
+            }
+
+            // Try creating welcome notification for administration
+            try {
+                await supabase.from('notifications').insert([{
+                    role: 'admin',
+                    title: 'New Student Registration',
+                    message: `Student ${name.trim()} (${trimmedId}) registered for ${course || dept || 'their course'}.`,
+                    icon: 'fa-user-graduate'
+                }]);
+            } catch (notifErr) {
+                console.warn('Signup notif error:', notifErr.message);
+            }
 
             return res.status(201).json({
                 success: true,
@@ -182,7 +207,7 @@ exports.register = async (req, res) => {
                     role: newUser.role,
                     dept: newUser.dept || '',
                     course: newUser.course || '',
-                    study_level: newUser.study_level || ''
+                    study_level: study_level || ''
                 }
             });
         }
@@ -228,13 +253,14 @@ exports.register = async (req, res) => {
         });
 
     } catch (error) {
+        console.error('Register error:', error);
         if (error.message && error.message.includes('duplicate key')) {
             if (error.message.includes('email')) {
                 return res.status(400).json({ success: false, message: 'Email address is already registered.' });
             }
             return res.status(400).json({ success: false, message: 'User ID already exists.' });
         }
-        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+        res.status(500).json({ success: false, message: error.message || 'Server error during registration.', error: error.message });
     }
 };
 
