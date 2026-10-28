@@ -7,6 +7,8 @@ frontend-old/node_modules/
 # Build output
 frontend/dist/
 frontend-old/dist/
+.vite/
+frontend/.vite/
 
 # Environment files (keep .env.example if present)
 .env

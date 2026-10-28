@@ -1,10 +1,11 @@
-import { X, FileText, User, Calendar, Tag, BookOpen, School, MessageSquare, Paperclip, AlertCircle, ArrowRightLeft } from 'lucide-react';
+import { X, FileText, User, Calendar, Tag, BookOpen, School, MessageSquare, Paperclip, AlertCircle, ArrowRightLeft, Clock } from 'lucide-react';
 
 const statusColors = {
     'New': { bg: 'var(--info-bg)', text: 'var(--info-text)' },
     'In Progress': { bg: 'var(--warning-bg)', text: 'var(--warning-text)' },
     'Resolved': { bg: 'var(--success-bg)', text: 'var(--success-text)' },
     'Reopened': { bg: 'var(--danger-bg)', text: 'var(--danger-text)' },
+    'Reopen Requested': { bg: 'rgba(245, 158, 11, 0.2)', text: '#d97706' },
 };
 
 const ViewComplaintModal = ({ isOpen, onClose, complaint }) => {
@@ -52,7 +53,7 @@ const ViewComplaintModal = ({ isOpen, onClose, complaint }) => {
                 </button>
 
                 {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--border)' }}>
                     <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <FileText size={20} />
                     </div>
@@ -67,6 +68,25 @@ const ViewComplaintModal = ({ isOpen, onClose, complaint }) => {
                         {complaint.status}
                     </span>
                 </div>
+
+                {complaint.status === 'Reopen Requested' && (
+                    <div style={{
+                        padding: '12px 14px',
+                        background: 'rgba(245, 158, 11, 0.1)',
+                        border: '1px solid rgba(245, 158, 11, 0.3)',
+                        borderRadius: 'var(--radius-md)',
+                        marginBottom: '16px',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '10px'
+                    }}>
+                        <Clock size={18} style={{ color: '#d97706', flexShrink: 0, marginTop: '2px' }} />
+                        <div style={{ fontSize: '0.83rem', color: 'var(--text-primary)', lineHeight: 1.45 }}>
+                            <strong style={{ color: '#d97706' }}>Reopen Approval Pending:</strong>
+                            <div>The student has requested to reopen this complaint. Awaiting action from Department Admin and Super Admin.</div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Details */}
                 <div style={{ display: 'flex', flexDirection: 'column' }}>

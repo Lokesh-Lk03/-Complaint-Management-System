@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import DashboardLayout from '../components/DashboardLayout';
-import { Edit2, Search, Eye } from 'lucide-react';
+import { Edit2, Search, Eye, Check, X, Clock } from 'lucide-react';
 import UpdateComplaintModal from '../components/UpdateComplaintModal';
 import ViewComplaintModal from '../components/ViewComplaintModal';
 import { API_BASE_URL } from '../config/api';
@@ -25,6 +25,30 @@ const AdminDashboard = () => {
     const [viewComplaint, setViewComplaint] = useState(null);
 
     const isDepartmentAdmin = user?.dept && user?.role !== 'admin';
+
+    const handleQuickStatus = async (complaintId, targetStatus, remarksText) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/complaints/${complaintId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    status: targetStatus,
+                    remarks: remarksText
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchAllComplaints();
+            } else {
+                alert(data.message || `Failed to update status to ${targetStatus}`);
+            }
+        } catch {
+            alert('Server error updating complaint status.');
+        }
+    };
 
     const fetchAllComplaints = async () => {
         try {
@@ -136,6 +160,7 @@ const AdminDashboard = () => {
                             <option value="In Progress">In Progress</option>
                             <option value="Resolved">Resolved</option>
                             <option value="Reopened">Reopened</option>
+                            <option value="Reopen Requested">Reopen Requested</option>
                         </select>
                     </div>
                 </div >
@@ -174,8 +199,8 @@ const AdminDashboard = () => {
                                             borderRadius: '20px',
                                             fontSize: '0.75rem',
                                             fontWeight: '600',
-                                            background: c.status === 'Resolved' ? 'var(--success-bg)' : c.status === 'New' ? 'var(--info-bg)' : c.status === 'In Progress' ? 'var(--warning-bg)' : 'var(--danger-bg)',
-                                            color: c.status === 'Resolved' ? 'var(--success-text)' : c.status === 'New' ? 'var(--info-text)' : c.status === 'In Progress' ? 'var(--warning-text)' : 'var(--danger-text)',
+                                            background: c.status === 'Resolved' ? 'var(--success-bg)' : c.status === 'New' ? 'var(--info-bg)' : c.status === 'In Progress' ? 'var(--warning-bg)' : c.status === 'Reopen Requested' ? 'rgba(245, 158, 11, 0.2)' : 'var(--danger-bg)',
+                                            color: c.status === 'Resolved' ? 'var(--success-text)' : c.status === 'New' ? 'var(--info-text)' : c.status === 'In Progress' ? 'var(--warning-text)' : c.status === 'Reopen Requested' ? '#d97706' : 'var(--danger-text)',
                                         }}>
                                             {c.status}
                                         </span>
@@ -183,7 +208,58 @@ const AdminDashboard = () => {
 
 
                                     <td style={{ padding: '16px 24px' }}>
-                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            {c.status === 'Reopen Requested' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (window.confirm(`Approve reopening for complaint ${c.id}?`)) {
+                                                                handleQuickStatus(c.id, 'Reopened', 'Reopen approved by administrator.');
+                                                            }
+                                                        }}
+                                                        title="Approve Reopen Request"
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px',
+                                                            padding: '6px 10px',
+                                                            borderRadius: '6px',
+                                                            border: 'none',
+                                                            background: 'rgba(16, 185, 129, 0.15)',
+                                                            color: 'var(--success)',
+                                                            fontSize: '0.8rem',
+                                                            fontWeight: '600',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <Check size={14} /> Approve
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const reason = prompt(`Decline reopening for complaint ${c.id}? Provide remarks (optional):`, 'Reopen request reviewed and kept resolved.');
+                                                            if (reason !== null) {
+                                                                handleQuickStatus(c.id, 'Resolved', reason);
+                                                            }
+                                                        }}
+                                                        title="Decline Reopen Request"
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px',
+                                                            padding: '6px 10px',
+                                                            borderRadius: '6px',
+                                                            border: 'none',
+                                                            background: 'rgba(239, 68, 68, 0.12)',
+                                                            color: '#ef4444',
+                                                            fontSize: '0.8rem',
+                                                            fontWeight: '600',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <X size={14} /> Decline
+                                                    </button>
+                                                </>
+                                            )}
                                             <button
                                                 onClick={() => {
                                                     setViewComplaint(c);

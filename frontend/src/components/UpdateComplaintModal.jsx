@@ -81,14 +81,35 @@ const UpdateComplaintModal = ({ isOpen, onClose, onSuccess, complaint }) => {
 
                 {error && <div style={{ padding: '12px', background: 'var(--danger-bg)', color: 'var(--danger-text)', borderRadius: 'var(--radius-sm)', marginBottom: '16px', fontSize: '0.85rem' }}>{error}</div>}
 
+                {complaint.status === 'Reopen Requested' && (
+                    <div style={{
+                        padding: '12px 14px',
+                        background: 'rgba(245, 158, 11, 0.12)',
+                        border: '1px solid rgba(245, 158, 11, 0.3)',
+                        borderRadius: 'var(--radius-md)',
+                        marginBottom: '16px'
+                    }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#d97706', marginBottom: '4px' }}>
+                            ⚠️ Reopen Request Pending Approval
+                        </div>
+                        <div style={{ fontSize: '0.83rem', color: 'var(--text-primary)', marginBottom: '6px', lineHeight: 1.4 }}>
+                            <strong>Student's Stated Reason:</strong> <em>"{complaint.remarks || 'No specific explanation provided.'}"</em>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                            Choose <strong>Reopened (Approve)</strong> to reactivate the complaint, or <strong>Resolved (Decline)</strong> to keep it closed.
+                        </div>
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit} style={{ margin: 0 }}>
                     <div className="form-group" style={{ marginBottom: '16px' }}>
                         <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>Status</label>
                         <select value={status} onChange={e => setStatus(e.target.value)} style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-primary)', outline: 'none' }} required>
+                            {complaint.status === 'Reopen Requested' && <option value="Reopen Requested">Reopen Requested (Pending Review)</option>}
                             {complaint.status === 'New' && <option value="New">New</option>}
                             <option value="In Progress">In Progress</option>
-                            <option value="Resolved">Resolved</option>
-                            <option value="Reopened">Reopened</option>
+                            <option value="Resolved">{complaint.status === 'Reopen Requested' ? 'Resolved (Decline Reopen)' : 'Resolved'}</option>
+                            <option value="Reopened">{complaint.status === 'Reopen Requested' ? 'Reopened (Approve Reopen)' : 'Reopened'}</option>
                         </select>
                     </div>
 

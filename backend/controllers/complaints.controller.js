@@ -238,18 +238,22 @@ exports.updateComplaint = async (req, res) => {
             }
 
             // Role-based authorization check
+            let targetStatus = status;
             if (userRole === 'student') {
                 if (complaint.studentId !== req.user.id) {
                     return res.status(403).json({ success: false, message: 'Access denied: You can only update your own complaints.' });
                 }
-                if (status !== 'Reopened') {
+                if (status !== 'Reopened' && status !== 'Reopen Requested') {
                     return res.status(403).json({ success: false, message: 'Students can only request to reopen a resolved complaint.' });
                 }
                 if (complaint.status !== 'Resolved') {
                     return res.status(400).json({ success: false, message: 'Only resolved complaints can be reopened.' });
                 }
+                // When student requests reopen, route it for corresponding admin and super admin approval
+                targetStatus = 'Reopen Requested';
             } else if ((userRole === 'staff' || userRole === 'faculty') && userDept) {
                 const isAssignedDept = (complaint.type && complaint.type.toLowerCase() === userDept.toLowerCase()) ||
+                                       (complaint.dept && complaint.dept.toLowerCase() === userDept.toLowerCase()) ||
                                        (complaint.referral && complaint.referral.toLowerCase().includes(userDept.toLowerCase()));
                 if (!isAssignedDept) {
                     return res.status(403).json({ success: false, message: 'Access denied: You are only authorized to manage complaints for your department.' });
@@ -258,7 +262,7 @@ exports.updateComplaint = async (req, res) => {
 
             const oldStatus = complaint.status;
             const updatePayload = {};
-            if (status) updatePayload.status = status;
+            if (targetStatus) updatePayload.status = targetStatus;
             if (referral !== undefined) updatePayload.referral = referral;
             if (remarks !== undefined) updatePayload.remarks = remarks;
 
@@ -271,25 +275,59 @@ exports.updateComplaint = async (req, res) => {
 
             if (updateError) throw updateError;
 
-            // Notify student or admin if status changed
-            if (status && oldStatus !== status) {
-                if (userRole === 'student' && status === 'Reopened') {
+            // Notify student or admins if status changed
+            if (targetStatus && oldStatus !== targetStatus) {
+                if (targetStatus === 'Reopen Requested') {
+                    const complaintDept = complaint.dept || complaint.type || complaint.school || 'Department';
+                    const reasonText = remarks || 'Reason not specified.';
+                    try {
+                        // 1. Notify Super Admin
+                        // 2. Notify Corresponding Department Staff
+                        await supabase.from('notifications').insert([
+                            {
+                                role: 'admin',
+                                title: 'Reopen Approval Requested',
+                                message: `Student ${req.user.id} requested to reopen complaint ${id} (${complaintDept}). Reason: ${reasonText}`,
+                                icon: 'fa-rotate-left'
+                            },
+                            {
+                                role: 'staff',
+                                title: `Reopen Request: ${complaintDept}`,
+                                message: `Student ${req.user.id} requested to reopen complaint ${id} in ${complaintDept}. Reason: ${reasonText}`,
+                                icon: 'fa-rotate-left'
+                            }
+                        ]);
+                    } catch (e) {
+                        console.warn('Admin & Dept reopen request notif error:', e.message);
+                    }
+                } else if (oldStatus === 'Reopen Requested' && targetStatus === 'Reopened') {
                     try {
                         await supabase.from('notifications').insert([{
-                            role: 'admin',
-                            title: 'Complaint Reopened',
-                            message: `Student ${req.user.id} reopened complaint ${id}.`,
-                            icon: 'fa-rotate-left'
+                            userId: complaint.studentId,
+                            title: 'Reopen Request Approved',
+                            message: `Your request to reopen complaint ${id} has been approved. The complaint is now Reopened.`,
+                            icon: 'fa-check-circle'
                         }]);
                     } catch (e) {
-                        console.warn('Admin status notif error:', e.message);
+                        console.warn('Student reopen approval notif error:', e.message);
+                    }
+                } else if (oldStatus === 'Reopen Requested' && targetStatus === 'Resolved') {
+                    try {
+                        await supabase.from('notifications').insert([{
+                            userId: complaint.studentId,
+                            title: 'Reopen Request Declined',
+                            message: `Your request to reopen complaint ${id} was declined: ${remarks || 'Remains resolved.'}`,
+                            icon: 'fa-circle-xmark'
+                        }]);
+                    } catch (e) {
+                        console.warn('Student reopen decline notif error:', e.message);
                     }
                 } else {
                     try {
                         await supabase.from('notifications').insert([{
                             userId: complaint.studentId,
                             title: 'Complaint Status Updated',
-                            message: `Your complaint ${id} status has been updated to "${status}".`,
+                            message: `Your complaint ${id} status has been updated to "${targetStatus}".`,
                             icon: 'fa-circle-dot'
                         }]);
                     } catch (e) {
@@ -310,18 +348,22 @@ exports.updateComplaint = async (req, res) => {
         const complaint = mockComplaints[complaintIndex];
 
         // Role-based authorization check
+        let targetStatus = status;
         if (userRole === 'student') {
             if (complaint.studentId !== req.user.id) {
                 return res.status(403).json({ success: false, message: 'Access denied: You can only update your own complaints.' });
             }
-            if (status !== 'Reopened') {
+            if (status !== 'Reopened' && status !== 'Reopen Requested') {
                 return res.status(403).json({ success: false, message: 'Students can only request to reopen a resolved complaint.' });
             }
             if (complaint.status !== 'Resolved') {
                 return res.status(400).json({ success: false, message: 'Only resolved complaints can be reopened.' });
             }
+            // When student requests reopen, route it for corresponding admin and super admin approval
+            targetStatus = 'Reopen Requested';
         } else if ((userRole === 'staff' || userRole === 'faculty') && userDept) {
             const isAssignedDept = (complaint.type && complaint.type.toLowerCase() === userDept.toLowerCase()) ||
+                                   (complaint.dept && complaint.dept.toLowerCase() === userDept.toLowerCase()) ||
                                    (complaint.referral && complaint.referral.toLowerCase().includes(userDept.toLowerCase()));
             if (!isAssignedDept) {
                 return res.status(403).json({ success: false, message: 'Access denied: You are only authorized to manage complaints for your department.' });
@@ -329,20 +371,56 @@ exports.updateComplaint = async (req, res) => {
         }
 
         const oldStatus = complaint.status;
-        if (status) complaint.status = status;
+        if (targetStatus) complaint.status = targetStatus;
         if (referral !== undefined) complaint.referral = referral;
         if (remarks !== undefined) complaint.remarks = remarks;
 
-        // Notify student or admin of update
-        if (status && oldStatus !== status) {
-            if (userRole === 'student' && status === 'Reopened') {
+        // Notify student or admins of update
+        if (targetStatus && oldStatus !== targetStatus) {
+            if (targetStatus === 'Reopen Requested') {
+                const complaintDept = complaint.dept || complaint.type || complaint.school || 'Department';
+                const reasonText = remarks || 'Reason not specified.';
+                // 1. Notify Super Admin
                 mockNotifications.unshift({
-                    id: 'notif-' + Date.now(),
+                    id: 'notif-' + Date.now() + '-1',
                     userId: null,
                     role: 'admin',
-                    title: 'Complaint Reopened',
-                    message: `Student ${req.user.id} reopened complaint ${id}.`,
+                    title: 'Reopen Approval Requested',
+                    message: `Student ${req.user.id} requested to reopen complaint ${id} (${complaintDept}). Reason: ${reasonText}`,
                     icon: 'fa-rotate-left',
+                    read: false,
+                    created_at: new Date().toISOString()
+                });
+                // 2. Notify Corresponding Department Staff
+                mockNotifications.unshift({
+                    id: 'notif-' + Date.now() + '-2',
+                    userId: null,
+                    role: 'staff',
+                    title: `Reopen Request: ${complaintDept}`,
+                    message: `Student ${req.user.id} requested to reopen complaint ${id} in ${complaintDept}. Reason: ${reasonText}`,
+                    icon: 'fa-rotate-left',
+                    read: false,
+                    created_at: new Date().toISOString()
+                });
+            } else if (oldStatus === 'Reopen Requested' && targetStatus === 'Reopened') {
+                mockNotifications.unshift({
+                    id: 'notif-' + Date.now(),
+                    userId: complaint.studentId,
+                    role: null,
+                    title: 'Reopen Request Approved',
+                    message: `Your request to reopen complaint ${id} has been approved. The complaint is now Reopened.`,
+                    icon: 'fa-check-circle',
+                    read: false,
+                    created_at: new Date().toISOString()
+                });
+            } else if (oldStatus === 'Reopen Requested' && targetStatus === 'Resolved') {
+                mockNotifications.unshift({
+                    id: 'notif-' + Date.now(),
+                    userId: complaint.studentId,
+                    role: null,
+                    title: 'Reopen Request Declined',
+                    message: `Your request to reopen complaint ${id} was declined: ${remarks || 'Remains resolved.'}`,
+                    icon: 'fa-circle-xmark',
                     read: false,
                     created_at: new Date().toISOString()
                 });
@@ -352,7 +430,7 @@ exports.updateComplaint = async (req, res) => {
                     userId: complaint.studentId,
                     role: null,
                     title: 'Complaint Status Updated',
-                    message: `Your complaint ${id} status has been updated to "${status}".`,
+                    message: `Your complaint ${id} status has been updated to "${targetStatus}".`,
                     icon: 'fa-circle-dot',
                     read: false,
                     created_at: new Date().toISOString()

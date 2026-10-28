@@ -331,11 +331,24 @@ async function runTestSuite() {
         assert.strictEqual(res.data.success, false);
     });
 
-    await test('Complaints: Student CAN reopen their own Resolved complaint (200)', async () => {
+    await test('Complaints: Student reopen request sets status to Reopen Requested (200)', async () => {
         const req = {
             user: { id: 'student', role: 'student' },
             params: { id: 'CMP10002' },
             body: { status: 'Reopened', remarks: 'Issue reoccurred.' }
+        };
+        const res = createMockRes();
+        await complaintsController.updateComplaint(req, res);
+        assert.strictEqual(res.statusCode, 200);
+        assert.strictEqual(res.data.success, true);
+        assert.strictEqual(res.data.data.status, 'Reopen Requested');
+    });
+
+    await test('Complaints: Admin can approve Reopen Requested complaint to Reopened (200)', async () => {
+        const req = {
+            user: { id: 'admin', role: 'admin' },
+            params: { id: 'CMP10002' },
+            body: { status: 'Reopened', remarks: 'Reopen approved by administrator.' }
         };
         const res = createMockRes();
         await complaintsController.updateComplaint(req, res);

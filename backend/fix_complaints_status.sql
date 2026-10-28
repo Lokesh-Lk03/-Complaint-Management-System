@@ -1,8 +1,9 @@
--- Fix for 'Reopened' Server Error on Complaints Update
--- Copy and paste this script into your Supabase SQL Editor to run it.
+-- Fix for 'Reopened' and 'Reopen Requested' Status on Complaints Update
+-- Copy and paste this script into your Supabase SQL Editor if needed.
 
--- This drops the old constraint that only allowed New, In Progress, and Resolved
+-- Drop any existing check constraint on complaint status
 ALTER TABLE public.complaints DROP CONSTRAINT IF EXISTS complaints_status_check;
 
--- This adds the new constraint that also allows "Reopened" which the frontend UI requires
-ALTER TABLE public.complaints ADD CONSTRAINT complaints_status_check CHECK (status IN ('New', 'In Progress', 'Resolved', 'Reopened'));
+-- Add updated constraint allowing all active statuses including 'Reopen Requested'
+ALTER TABLE public.complaints ADD CONSTRAINT complaints_status_check CHECK (status IN ('New', 'In Progress', 'Resolved', 'Reopened', 'Reopen Requested'));
+
