@@ -118,7 +118,7 @@ exports.login = async (req, res) => {
 
 exports.register = async (req, res) => {
     try {
-        const { id, name, email, password, course, dept } = req.body;
+        const { id, name, email, password, course, dept, study_level } = req.body;
 
         if (!id || !name || !email || !password) {
             return res.status(400).json({ success: false, message: 'All fields are required (id, name, email, password).' });
@@ -164,6 +164,7 @@ exports.register = async (req, res) => {
                     role: 'student',
                     course: course || null,
                     dept: dept || null,
+                    study_level: study_level || null,
                     status: 'active'
                 }])
                 .select()
@@ -180,7 +181,8 @@ exports.register = async (req, res) => {
                     email: newUser.email,
                     role: newUser.role,
                     dept: newUser.dept || '',
-                    course: newUser.course || ''
+                    course: newUser.course || '',
+                    study_level: newUser.study_level || ''
                 }
             });
         }
@@ -205,6 +207,7 @@ exports.register = async (req, res) => {
             role: 'student',
             course: course || '',
             dept: dept || '',
+            study_level: study_level || '',
             status: 'active',
             created_at: new Date().toISOString()
         };

@@ -220,7 +220,7 @@ exports.updateComplaint = async (req, res) => {
         const userDept = req.user.dept;
 
         // Validate allowed status
-        const validStatuses = ['New', 'In Progress', 'Resolved', 'Reopened'];
+        const validStatuses = ['New', 'In Progress', 'Resolved', 'Reopened', 'Reopen Requested'];
         if (status && !validStatuses.includes(status)) {
             return res.status(400).json({ success: false, message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
         }
