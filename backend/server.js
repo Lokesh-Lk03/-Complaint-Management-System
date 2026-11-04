@@ -5,7 +5,8 @@ const dotenv = require('dotenv');
 const path = require('path');
 
 // Load env vars
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config(); // fallback to root .env if present
 
 const app = express();
 

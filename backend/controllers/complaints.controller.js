@@ -208,7 +208,7 @@ exports.getComplaints = async (req, res) => {
 
     } catch (error) {
         console.error('Get complaints error:', error);
-        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+        res.status(500).json({ success: false, message: error.message || 'Server error', error: error.message });
     }
 };
 
@@ -273,7 +273,24 @@ exports.updateComplaint = async (req, res) => {
                 .select()
                 .single();
 
-            if (updateError) throw updateError;
+            if (updateError) {
+                // Defensive fallback: If Supabase check constraint doesn't yet include 'Reopen Requested',
+                // fallback to 'Reopened' with notice so user is never blocked by database constraint
+                if (targetStatus === 'Reopen Requested' && updateError.message && updateError.message.includes('complaints_status_check')) {
+                    console.warn('Notice: Supabase complaints constraint does not include "Reopen Requested". Falling back to "Reopened".');
+                    updatePayload.status = 'Reopened';
+                    updatePayload.remarks = `[Reopen Request]: ${remarks || 'Reopen requested by student'}`;
+                    const { data: fallbackComplaint, error: fallbackError } = await supabase
+                        .from('complaints')
+                        .update(updatePayload)
+                        .eq('id', id)
+                        .select()
+                        .single();
+                    if (fallbackError) throw fallbackError;
+                    return res.json({ success: true, data: fallbackComplaint, note: 'Please execute backend/fix_complaints_status.sql in Supabase SQL editor.' });
+                }
+                throw updateError;
+            }
 
             // Notify student or admins if status changed
             if (targetStatus && oldStatus !== targetStatus) {
@@ -451,6 +468,6 @@ exports.updateComplaint = async (req, res) => {
             });
         }
 
-        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+        res.status(500).json({ success: false, message: error.message || 'Server error', error: error.message });
     }
 };

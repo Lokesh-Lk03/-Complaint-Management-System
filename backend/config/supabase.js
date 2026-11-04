@@ -1,6 +1,8 @@
 const { createClient } = require('@supabase/supabase-js');
 const dotenv = require('dotenv');
+const path = require('path');
 
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 dotenv.config();
 
 const rawUrl = process.env.SUPABASE_URL ? process.env.SUPABASE_URL.trim() : '';
