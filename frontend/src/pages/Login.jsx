@@ -117,7 +117,7 @@ const Login = ({ initialMode = 'login' }) => {
                 setError(data.message || 'Invalid ID or password.');
             }
         } catch {
-            setError('Server error. Please ensure the backend server is running on port 5001.');
+            setError('Server error. Please ensure the backend server is running on port 5002.');
         } finally {
             setLoading(false);
         }
